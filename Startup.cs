@@ -12,7 +12,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Commander.Data;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using MySql.Data.EntityFrameworkCore;
+//using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using AutoMapper;
+using Newtonsoft.Json.Serialization;
 
 namespace Commander
 {
@@ -32,14 +35,16 @@ namespace Commander
             // replace "YourDbContext" with the class name of your DbContext
             services.AddDbContext<CommanderContext>(options => options
                 // replace with your connection string
-                .UseMySql(Configuration.GetConnectionString("AgendaElectronicaDB"), mySqlOptions => mySqlOptions
-                    // replace with your Server Version and Type
-                    .ServerVersion(new Version(8, 0, 21), ServerType.MySql)
+                .UseMySQL(Configuration.GetConnectionString("AgendaElectronicaDB")
             ));
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(s => {
+                s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
 
-            services.AddScoped<ICommanderRepo, MockCommanderRepo>();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            
+            services.AddScoped<ICommanderRepo, MySqlCommanderRepo>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
